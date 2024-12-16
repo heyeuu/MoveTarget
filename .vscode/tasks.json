@@ -27,9 +27,9 @@
             "args": [
                 "-f",
                 // modify the mode from jtag to swd please
-                "interface/jlink.cfg",
+                "interface/stlink.cfg",
                 "-f",
-                "target/stm32f4x.cfg",
+                "target/stm32f1x.cfg",
                 "-c",
                 "program template.elf verify reset exit"
             ],

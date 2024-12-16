@@ -1,0 +1,1 @@
+openocd -f interface/jlink.cfg -f target/stm32f4x.cfg -c "program ./build/template.elf verify reset exit"

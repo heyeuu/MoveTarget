@@ -61,8 +61,6 @@ void Error_Handler(void);
 #define LEDA_GPIO_Port GPIOH
 #define LEDB_Pin GPIO_PIN_11
 #define LEDB_GPIO_Port GPIOH
-#define LEDC_Pin GPIO_PIN_10
-#define LEDC_GPIO_Port GPIOH
 #define OLED_DC_Pin GPIO_PIN_12
 #define OLED_DC_GPIO_Port GPIOB
 #define OLED_RESET_Pin GPIO_PIN_14

@@ -7,7 +7,7 @@ set(CMAKE_C_EXTENSIONS ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
 
-add_compile_options(-Os -O3)
+# add_compile_options(-Os -O3)
 set(CMAKE_BUILD_TYPE "Debug")
 
 # Set the project name
@@ -38,11 +38,14 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 file(GLOB_RECURSE PROJECT_CPP "src/*.cc")
+file(GLOB_RECURSE PROJECT_C "src/*.c")
+
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     ${PROJECT_CPP}
+    ${PROJECT_C}
 )
 
 # Add include paths
