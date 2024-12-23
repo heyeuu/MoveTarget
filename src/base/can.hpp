@@ -2,12 +2,12 @@
 
 #include "can.h"
 
-inline void set_can_tx_header(CAN_TxHeaderTypeDef* header) {
-    header->StdId = 0X1FF;
-    header->IDE = CAN_ID_STD;
-    header->RTR = CAN_RTR_DATA;
-    header->DLC = 8;
-    header->TransmitGlobalTime = DISABLE;
+inline void set_can_tx_header(CAN_TxHeaderTypeDef& header) {
+    header.IDE = CAN_ID_STD;
+    header.StdId = 0X1FF;
+    header.RTR = CAN_RTR_DATA;
+    header.DLC = 8;
+    header.TransmitGlobalTime = DISABLE;
 }
 
 // todo

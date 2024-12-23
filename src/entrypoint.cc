@@ -5,35 +5,12 @@
 #include "utility/pid.hpp"
 
 #include "can.h"
+// #include "iwdg.h"
 #include "main.h"
 #include "usart.h"
 
-struct Control {
-    int16_t current[4];
-
-    int16_t& operator[](size_t index) {
-        return current[index];
-    }
-
-    void friend operator<<(uint8_t be_data[8], Control& control) {
-        auto le_data = reinterpret_cast<uint8_t*>(&control);
-
-        be_data[0] = le_data[1];
-        be_data[1] = le_data[0];
-
-        be_data[2] = le_data[3];
-        be_data[3] = le_data[2];
-
-        be_data[4] = le_data[4];
-        be_data[5] = le_data[5];
-
-        be_data[6] = le_data[7];
-        be_data[7] = le_data[6];
-    }
-};
-
-float move_speed_target = 0;
-float rotate_speed_target = 0;
+float move_speed_target = -0.15;
+float rotate_speed_target = 0.0;
 
 float move_current_speed = 0;
 float rotate_current_speed = 0;
@@ -43,11 +20,10 @@ float rotate_current_speed = 0;
 
 bool system_enabled = false;
 
-Motor motor3508; // id=1
-Motor motor6020; // id=2
-int16_t current = 8000;
-auto control = Control {};
+// int16_t control_volume_6020;
 
+float speed_output_6020 = 0;
+float speed_output_3508 = 0;
 /// @brief 电机控制
 void motor_control_loop() {
 
@@ -55,28 +31,11 @@ void motor_control_loop() {
     // calculate target current
     // send can message
 
-    // float cal_move_speed = calculate_speed(move_speed_target, move_current_speed);
-    // current = speed_to_current(cal_move_speed);
-    // set_motor_current(current, &motor3508);
-    // set_motor_current(10000, &motor6020);
+    speed_output_6020 = calculate_speed(rotate_speed_target, rotate_current_speed);
+    speed_output_3508 = calculate_speed(move_speed_target, move_current_speed);
+    set_motor_speed(speed_output_3508, 0);
 
-    control[0] = current;
-    control[1] = current;
-    control[2] = current;
-    control[3] = current;
-
-    uint8_t data[8];
-    data << control;
-
-    HAL_CAN_AddTxMessage(&hcan1, &motor6020.handle.header_tx,
-        data, &motor6020.handle.mail);
-
-    // float cal_rota_speed = calculate_speed(rotate_speed_target, rotate_current_speed);
-    // current = speed_to_current(cal_rota_speed);
-
-    // current = speed_to_current(rotate_current_speed);
-    // set_motor_current(current, &motor6020);
-    // HAL_Delay(10);
+    HAL_Delay(10);
 }
 
 uint8_t can_data_buffer[8];
@@ -88,17 +47,20 @@ void handle_motor_data() {
     // update the global values
     // 回报文头判断
     HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &can_rx_header_buffer, can_data_buffer);
-    if (can_rx_header_buffer.StdId == 0x201) {
-        get_motor_status(can_data_buffer, &motor3508);
-        move_speed_target = motor3508.status.speed;
+    if (can_rx_header_buffer.StdId == id_3508) {
+        get_motor_status(can_data_buffer, m3508);
+        move_current_speed = m3508.speed / 400.0;
+        // if (m3508.torque_current > 20000 || m3508.torque_current < -20000) {
+        //     move_speed_target = -move_speed_target;
+        // }
         // if (move_speed_target > 0) {
         //     move_direction = true;
         // } else {
         //     move_direction = false;
         // }
-    } else if (can_rx_header_buffer.StdId == 0x204) {
-        get_motor_status(can_data_buffer, &motor6020);
-        rotate_current_speed = motor6020.status.speed;
+    } else if (can_rx_header_buffer.StdId == id_6020) {
+        get_motor_status(can_data_buffer, m6020);
+        rotate_current_speed = m6020.speed / 220.;
         // if (rotate_current_speed > 0) {
         //     rotate_direction = true;
         // } else {
@@ -110,19 +72,11 @@ void handle_motor_data() {
 /// @brief 用户命令处理
 void handle_command_data() {
     // handle watchdog
-    // speed_to_current();
     // handle data
     // update the target values and boolean values
 
-    if (UART1_rx_buffer[rx_index] == '\n' || UART1_rx_buffer[rx_index] == '\r') {
-        parse_commend();
-        rx_index
-            = 0;
-    } else if (rx_index < RX_BUFFER_SIZE) {
-        rx_index++;
-    }
-
     HAL_UART_Receive_IT(&huart1, UART1_rx_buffer, sizeof(UART1_rx_buffer));
+    parse_commend();
 }
 
 /// @brief 传感器处理
@@ -130,33 +84,34 @@ void handle_sensor_data() {
     // handle the data from serial
     // parse the data
     // update the values
+
     // uint16_t distance = get_distance();
-    // if (distance < 30) {
-    //     move_speed_target = -move_speed_target;
-    // }
+    // if (distance < 30 || distance > 200)
+    //     toggle_speed(move_speed_target);
 }
 
 void entrypoint() {
 
-    // init_motor(&motor3508);
-    init_motor(&motor6020);
-    motor_control_loop();
+    init_motor();
     // init_tof();
+
     HAL_UART_Receive_IT(&huart1, UART1_rx_buffer, sizeof(UART1_rx_buffer));
     // HAL_UART_Receive_IT(&huart2, &UART2_rx, sizeof(UART2_rx));
     while (true) {
-
+        motor_control_loop();
         // keep the led running
         HAL_Delay(100);
         HAL_GPIO_TogglePin(LEDA_GPIO_Port, LEDA_Pin);
-        // HAL_GPIO_TogglePin(LEDB_GPIO_Port, LEDB_Pin);
-        motor_control_loop();
+        // motor_control_loop();
     }
 }
-/*100ms per*/
+/*1s per*/
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
-    if (htim->Instance == TIM14)
+    uint8_t uart1_tx;
+    if (htim->Instance == TIM14) {
         motor_control_loop();
+        // HAL_UART_Transmit_IT(&huart1, &uart1_tx, 1);
+    }
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan) {
@@ -171,6 +126,12 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef* huart, uint16_t size) {
 
     if (huart == &huart2)
         handle_sensor_data();
+
     HAL_UART_Receive_IT(&huart2, &UART2_rx, sizeof(UART2_rx));
     HAL_UART_Receive_IT(&huart1, UART1_rx_buffer, sizeof(UART1_rx_buffer));
+}
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
+    if (huart->Instance == USART1) {
+        // HAL_IWDG_Refresh(&hiwdg);
+    }
 }

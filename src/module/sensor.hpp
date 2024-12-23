@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 #include "module/VL53L0X.h"
-statInfo_t_VL53L0X distanceStr1;
+inline statInfo_t_VL53L0X distanceStr1;
 inline void init_tof() {
     initVL53L0X(1, &hi2c1);
 
