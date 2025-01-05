@@ -11,10 +11,10 @@ typedef struct MotorStatus {
 } MotorStatus;
 
 inline auto m3508 = MotorStatus {};
-inline constexpr auto id_3508 = 517;
+inline constexpr auto id_3508 = 0x206;
 
 inline auto m6020 = MotorStatus {};
-inline constexpr auto id_6020 = 518;
+inline constexpr auto id_6020 = 0x205;
 
 inline auto header_tx = CAN_TxHeaderTypeDef {};
 
@@ -60,8 +60,8 @@ inline void set_motor_speed(double speed_3508, double speed_6020) {
     auto current_3508 = static_cast<int16_t>(std::clamp(speed_3508, -1., 1.) * 16384.);
     auto current_6020 = static_cast<int16_t>(std::clamp(speed_6020, -1., 1.) * 25000.);
 
-    control[0] = current_3508;
-    control[1] = current_6020;
+    control[1] = current_3508;
+    control[0] = current_6020;
 
     uint8_t data[8];
     data << control;

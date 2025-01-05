@@ -57,14 +57,24 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define receive_tof_Pin GPIO_PIN_7
+#define receive_tof_GPIO_Port GPIOB
+#define nearby_high_Pin GPIO_PIN_0
+#define nearby_high_GPIO_Port GPIOF
+#define nearby_read_Pin GPIO_PIN_1
+#define nearby_read_GPIO_Port GPIOF
 #define LEDA_Pin GPIO_PIN_12
 #define LEDA_GPIO_Port GPIOH
 #define LEDB_Pin GPIO_PIN_11
 #define LEDB_GPIO_Port GPIOH
-#define OLED_DC_Pin GPIO_PIN_12
-#define OLED_DC_GPIO_Port GPIOB
-#define OLED_RESET_Pin GPIO_PIN_14
-#define OLED_RESET_GPIO_Port GPIOB
+#define remote_low_Pin GPIO_PIN_12
+#define remote_low_GPIO_Port GPIOB
+#define remote_read_Pin GPIO_PIN_13
+#define remote_read_GPIO_Port GPIOB
+#define remote_high_Pin GPIO_PIN_14
+#define remote_high_GPIO_Port GPIOB
+#define nearby_low_Pin GPIO_PIN_15
+#define nearby_low_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
