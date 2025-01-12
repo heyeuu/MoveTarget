@@ -59,7 +59,7 @@ void handle_motor_data() {
     HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &can_rx_header_buffer, can_data_buffer);
     if (can_rx_header_buffer.StdId == id_3508) {
         get_motor_status(can_data_buffer, m3508);
-        move_current_speed = m3508.speed / 2000.;
+        move_current_speed = m3508.speed / 3000.;
 
     } else if (can_rx_header_buffer.StdId == id_6020) {
         get_motor_status(can_data_buffer, m6020);
